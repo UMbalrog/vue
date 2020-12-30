@@ -19,9 +19,10 @@ Vue.prototype.$mount = function (
   el?: string | Element,
   hydrating?: boolean
 ): Component {
+  // 获取document元素
   el = el && query(el)
 
-  /* istanbul ignore if */
+  /* istanbul ignore if */ // el元素不能是body和html
   if (el === document.body || el === document.documentElement) {
     process.env.NODE_ENV !== 'production' && warn(
       `Do not mount Vue to <html> or <body> - mount to normal elements instead.`
@@ -31,6 +32,7 @@ Vue.prototype.$mount = function (
 
   const options = this.$options
   // resolve template/el and convert to render function
+  // 如果没有render函数就处理template模板，将template编译为render函数
   if (!options.render) {
     let template = options.template
     if (template) {

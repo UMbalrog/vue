@@ -27,10 +27,12 @@ Vue.config.getTagNamespace = getTagNamespace
 Vue.config.isUnknownElement = isUnknownElement
 
 // install platform runtime directives & components
+// 注册平台相关的指令和组件，v-model和v-show，组件TransitionGroup和Transition
 extend(Vue.options.directives, platformDirectives)
 extend(Vue.options.components, platformComponents)
 
 // install platform patch function
+// 如果是浏览器环境挂载对比DOM函数，
 Vue.prototype.__patch__ = inBrowser ? patch : noop
 
 // public mount method
@@ -39,11 +41,12 @@ Vue.prototype.$mount = function (
   hydrating?: boolean
 ): Component {
   el = el && inBrowser ? query(el) : undefined
+  // 渲染元素
   return mountComponent(this, el, hydrating)
 }
 
 // devtools global hook
-/* istanbul ignore next */
+/* istanbul ignore next 调试的相关代码 */
 if (inBrowser) {
   setTimeout(() => {
     if (config.devtools) {
