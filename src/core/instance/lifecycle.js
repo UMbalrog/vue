@@ -63,7 +63,7 @@ export function lifecycleMixin (Vue: Class<Component>) {
     const restoreActiveInstance = setActiveInstance(vm)
     vm._vnode = vnode
     // Vue.prototype.__patch__ is injected in entry points
-    // based on the rendering backend used.
+    // 核心是调用__patch__方法，__patch__方法将虚拟DOM转为真实DOM
     if (!prevVnode) {
       // initial render
       vm.$el = vm.__patch__(vm.$el, vnode, hydrating, false /* removeOnly */)
