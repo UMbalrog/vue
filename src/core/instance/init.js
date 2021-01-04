@@ -13,6 +13,7 @@ import { extend, mergeOptions, formatComponentName } from '../util/index'
 let uid = 0
 
 export function initMixin (Vue: Class<Component>) {
+
   Vue.prototype._init = function (options?: Object) {
     const vm: Component = this
     // a uid
@@ -49,13 +50,24 @@ export function initMixin (Vue: Class<Component>) {
     }
     // expose real self
     vm._self = vm
+    // vm 的生命周期相关变量初始化
+    // $children/$parent/$root/$refs
     initLifecycle(vm)
+    // vm 的事件监听初始化, 父组件绑定在当前组件上的事件
     initEvents(vm)
+    // vm 实例的编译render初始化 一些属性和H函数$createElement
+    // $slots/$scopedSlots/_c/$createElement/$attrs/$listeners
     initRender(vm)
+    // 触发生命周期函数 beforeCreate
     callHook(vm, 'beforeCreate')
+    // 把 inject 的成员注入到 vm 上
     initInjections(vm) // resolve injections before data/props
+    // 初始化状态 vm 的 _props/methods/_data/computed/watch
+    // 为vm实例分别注入_props、methods、_data、computed、watch属性
     initState(vm)
+    // 初始化 provide
     initProvide(vm) // resolve provide after data/props
+    // 触发生命周期函数 created
     callHook(vm, 'created')
 
     /* istanbul ignore if */
@@ -66,6 +78,7 @@ export function initMixin (Vue: Class<Component>) {
     }
 
     if (vm.$options.el) {
+      // 调用$mount开始渲染页面
       vm.$mount(vm.$options.el)
     }
   }

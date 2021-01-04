@@ -34,7 +34,7 @@ const sharedPropertyDefinition = {
   get: noop,
   set: noop
 }
-
+// 代理器，传递get和set并且，将数据变成响应式数据
 export function proxy (target: Object, sourceKey: string, key: string) {
   sharedPropertyDefinition.get = function proxyGetter () {
     return this[sourceKey][key]
@@ -48,6 +48,7 @@ export function proxy (target: Object, sourceKey: string, key: string) {
 export function initState (vm: Component) {
   vm._watchers = []
   const opts = vm.$options
+  // 初始化各项属性
   if (opts.props) initProps(vm, opts.props)
   if (opts.methods) initMethods(vm, opts.methods)
   if (opts.data) {
@@ -66,6 +67,7 @@ function initProps (vm: Component, propsOptions: Object) {
   const props = vm._props = {}
   // cache prop keys so that future props updates can iterate using Array
   // instead of dynamic object key enumeration.
+  // 缓存props的key，为之后方便调用
   const keys = vm.$options._propKeys = []
   const isRoot = !vm.$parent
   // root instance props should be converted
@@ -85,6 +87,7 @@ function initProps (vm: Component, propsOptions: Object) {
           vm
         )
       }
+      // 注册响应式数据 将那些属性注册到props上
       defineReactive(props, key, value, () => {
         if (!isRoot && !isUpdatingChildComponent) {
           warn(
@@ -102,6 +105,7 @@ function initProps (vm: Component, propsOptions: Object) {
     // static props are already proxied on the component's prototype
     // during Vue.extend(). We only need to proxy props defined at
     // instantiation here.
+    // 判断改vm实例上是否有改属性，没有则添加，补充遗漏
     if (!(key in vm)) {
       proxy(vm, `_props`, key)
     }
@@ -137,6 +141,7 @@ function initData (vm: Component) {
         )
       }
     }
+    // 同methods判断
     if (props && hasOwn(props, key)) {
       process.env.NODE_ENV !== 'production' && warn(
         `The data property "${key}" is already declared as a prop. ` +
@@ -147,7 +152,7 @@ function initData (vm: Component) {
       proxy(vm, `_data`, key)
     }
   }
-  // observe data
+  // observe data 注册响应式
   observe(data, true /* asRootData */)
 }
 
@@ -270,12 +275,15 @@ function initMethods (vm: Component, methods: Object) {
           vm
         )
       }
+      // 判断是否有与props中同名的属性
       if (props && hasOwn(props, key)) {
         warn(
           `Method "${key}" has already been defined as a prop.`,
           vm
         )
       }
+      // 判断是否有与vm实例中同名的属性
+      // 检查字符串是否以 $或_ 开头，不建议这样做
       if ((key in vm) && isReserved(key)) {
         warn(
           `Method "${key}" conflicts with an existing Vue instance method. ` +
@@ -283,6 +291,7 @@ function initMethods (vm: Component, methods: Object) {
         )
       }
     }
+    // methods属性不是函数就挂在空函数，是函数就传递this为vm实例
     vm[key] = typeof methods[key] !== 'function' ? noop : bind(methods[key], vm)
   }
 }

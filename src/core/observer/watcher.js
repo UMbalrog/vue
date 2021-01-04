@@ -47,7 +47,7 @@ export default class Watcher {
     expOrFn: string | Function,
     cb: Function,
     options?: ?Object,
-    isRenderWatcher?: boolean
+    isRenderWatcher?: boolean // 是否是渲染函数
   ) {
     this.vm = vm
     if (isRenderWatcher) {
@@ -58,7 +58,7 @@ export default class Watcher {
     if (options) {
       this.deep = !!options.deep
       this.user = !!options.user
-      this.lazy = !!options.lazy
+      this.lazy = !!options.lazy //是否延迟渲染，计算属性需要延迟渲染
       this.sync = !!options.sync
       this.before = options.before
     } else {
@@ -79,6 +79,7 @@ export default class Watcher {
     if (typeof expOrFn === 'function') {
       this.getter = expOrFn
     } else {
+      // 创建监听器时expOrFn可能会传字符串，这里处理这个
       this.getter = parsePath(expOrFn)
       if (!this.getter) {
         this.getter = noop
@@ -99,7 +100,9 @@ export default class Watcher {
    * Evaluate the getter, and re-collect dependencies.
    */
   get () {
+    // 这里的watcher是要渲染视图的，渲染视图时，要先渲染内部组件的，这里就是讲外部的watcher缓存起来，内部组件渲染完成后再渲染这里；
     pushTarget(this)
+
     let value
     const vm = this.vm
     try {

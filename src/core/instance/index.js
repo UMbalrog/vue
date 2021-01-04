@@ -23,7 +23,7 @@ stateMixin(Vue)
 eventsMixin(Vue)
 // 注册 vm 实例的部分生命周期方法, _update/$forceUpdate/$destroy
 lifecycleMixin(Vue)
-// 注册 vm 实例的render函数和$nextTick函数
+// 注册 vm 实例的render函数、render函数的操作DOM的api以_开头 和$nextTick函数
 renderMixin(Vue)
 
 export default Vue
