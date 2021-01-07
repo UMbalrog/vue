@@ -201,6 +201,8 @@ export function mountComponent (
   // 这里可能是要将渲染过程保存在watcher中，并添加监听数据变，以便再之后的数据变化后更新视图，只需在需要改变时视图时，触发次watcher即可
 
   // 在Watcher中利用get方法执行updateComponent渲染界面；
+
+  // 渲染Watcher，将渲染的函数独立放出 在 Watcher 的get中去调用函数，其中渲染函数会调用用到变量的get，此时就可以给对应的属性添加Watcher，到对应的Dep中，切注册updata为该渲染函数，则当其中任意一个变量变化都会执行该渲染函数去渲染。
   new Watcher(vm, updateComponent, noop, {
     before () {
       if (vm._isMounted && !vm._isDestroyed) {

@@ -75,6 +75,7 @@ export default class Watcher {
     this.expression = process.env.NODE_ENV !== 'production'
       ? expOrFn.toString()
       : ''
+    this.x_propname = expOrFn.toString()
     // parse expression for getter
     if (typeof expOrFn === 'function') {
       this.getter = expOrFn
@@ -100,7 +101,9 @@ export default class Watcher {
    * Evaluate the getter, and re-collect dependencies.
    */
   get () {
-    // 这里的watcher是要渲染视图的，渲染视图时，要先渲染内部组件的，这里就是讲外部的watcher缓存起来，内部组件渲染完成后再渲染这里；
+    // 这里的watcher是要渲染视图的，渲染视图时，要先渲染内部组件的，这里就是讲外部的watcher缓存起来，内部组件渲染完成后再渲染这里；// 并且在这里触发Dep
+    // 当数据被调用，或者被改变时都会调用 watcher 的 get 方法，在get方法中就会触发Dep的target属性去将watcher添加到dep的观察者列表中，使得dep可以在数据改变时触发watcher变化。如何添加观察者的核心
+
     pushTarget(this)
 
     let value
@@ -127,12 +130,15 @@ export default class Watcher {
 
   /**
    * Add a dependency to this directive.
+   * 添加依赖
    */
   addDep (dep: Dep) {
     const id = dep.id
+    // 利用id，添加过 就不添加了
     if (!this.newDepIds.has(id)) {
       this.newDepIds.add(id)
       this.newDeps.push(dep)
+      // 没有添加此dep就调用dep的方法，添加此watcher到dep的列表中
       if (!this.depIds.has(id)) {
         dep.addSub(this)
       }

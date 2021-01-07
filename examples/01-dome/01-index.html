@@ -9,6 +9,8 @@
   <div id="app">
     Hello World
     <div>{{msg}}</div>
+    -------------------
+    <div>{{msg}}</div>
   </div>
   <script src="../../dist/vue.js"></script>
   <script>
@@ -48,6 +50,8 @@
       //   return h('h1', 'Hello Render')
       // }
     })
+    console.log(vm);
+    console.log(vm.msg);
     // 会渲染render函数
   </script>
 

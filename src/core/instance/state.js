@@ -107,6 +107,8 @@ function initProps (vm: Component, propsOptions: Object) {
     // instantiation here.
     // 判断改vm实例上是否有改属性，没有则添加，补充遗漏
     if (!(key in vm)) {
+      // 代理器，传递get和set属性并且，将数据变成响应式数据
+      // 将vm实例上的属性代理到vm的私有属性_props上
       proxy(vm, `_props`, key)
     }
   }
@@ -130,7 +132,8 @@ function initData (vm: Component) {
   const keys = Object.keys(data)
   const props = vm.$options.props
   const methods = vm.$options.methods
-  let i = keys.length
+  let i = keys.length;
+  // 遍历data中全部属性；利用数组的长度，减减，遍历数组好方法
   while (i--) {
     const key = keys[i]
     if (process.env.NODE_ENV !== 'production') {
@@ -148,11 +151,14 @@ function initData (vm: Component) {
         `Use prop default value instead.`,
         vm
       )
+
     } else if (!isReserved(key)) {
+      // 同理将vm实例上的应该的data属性代理到vm的私有属性_data上
       proxy(vm, `_data`, key)
     }
   }
   // observe data 注册响应式
+  // 返回一个响应式的实例，响应式就是给对象添加一个观察者实例，当数据变化是通知观察者。观察者再去变更数据。
   observe(data, true /* asRootData */)
 }
 
