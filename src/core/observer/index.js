@@ -234,21 +234,27 @@ export function defineReactive (
  * already exist.
  */
 export function set (target: Array<any> | Object, key: any, val: any): any {
+  // 判断是否是undefined或者原始值
   if (process.env.NODE_ENV !== 'production' &&
     (isUndef(target) || isPrimitive(target))
   ) {
     warn(`Cannot set reactive property on undefined, null, or primitive value: ${(target: any)}`)
   }
+  // 处理数组的情况
   if (Array.isArray(target) && isValidArrayIndex(key)) {
     target.length = Math.max(target.length, key)
+    // 利用 splice 方法，这里的splice已经是Vue是修改后的可以直接触发响应式
     target.splice(key, 1, val)
     return val
   }
+  // 如果key在在对象中已存在直接赋值
   if (key in target && !(key in Object.prototype)) {
     target[key] = val
     return val
   }
+  // 获取 target 中的 observer 对象
   const ob = (target: any).__ob__
+  // 如果这个target是 vue实例 或者是$data 则直接返回
   if (target._isVue || (ob && ob.vmCount)) {
     process.env.NODE_ENV !== 'production' && warn(
       'Avoid adding reactive properties to a Vue instance or its root $data ' +
@@ -256,17 +262,21 @@ export function set (target: Array<any> | Object, key: any, val: any): any {
     )
     return val
   }
+  // 如果这个 target 不是响应式的，也直接返回
   if (!ob) {
     target[key] = val
     return val
   }
+  // 为此属性添加响应式，把key设置响应式属性
   defineReactive(ob.value, key, val)
+  // 派发通知 因为我们为每个子对象都添加了收集依赖，所以这里可以直接发送通知
   ob.dep.notify()
   return val
 }
 
 /**
  * Delete a property and trigger change if necessary.
+ * 类似于set
  */
 export function del (target: Array<any> | Object, key: any) {
   if (process.env.NODE_ENV !== 'production' &&
@@ -274,11 +284,14 @@ export function del (target: Array<any> | Object, key: any) {
   ) {
     warn(`Cannot delete reactive property on undefined, null, or primitive value: ${(target: any)}`)
   }
+  // 处理数组的情况，同set，利用修补后的splice方法
   if (Array.isArray(target) && isValidArrayIndex(key)) {
     target.splice(key, 1)
     return
   }
   const ob = (target: any).__ob__
+  // 如果这个target是 vue实例 或者是$data 则直接返回
+  // 不可是vue实例 或者是$data
   if (target._isVue || (ob && ob.vmCount)) {
     process.env.NODE_ENV !== 'production' && warn(
       'Avoid deleting properties on a Vue instance or its root $data ' +
@@ -286,13 +299,17 @@ export function del (target: Array<any> | Object, key: any) {
     )
     return
   }
+  // 本来就没有，直接返回
   if (!hasOwn(target, key)) {
     return
   }
+  // 删除属性
   delete target[key]
+  // 如果不是响应式，直接返回，不发送通知
   if (!ob) {
     return
   }
+  // 发送通知，目的就在这里，让删除属性也可以更新视图
   ob.dep.notify()
 }
 

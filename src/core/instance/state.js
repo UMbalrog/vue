@@ -49,14 +49,18 @@ export function initState (vm: Component) {
   vm._watchers = []
   const opts = vm.$options
   // 初始化各项属性
+
   if (opts.props) initProps(vm, opts.props)
   if (opts.methods) initMethods(vm, opts.methods)
+
   if (opts.data) {
     initData(vm)
   } else {
     observe(vm._data = {}, true /* asRootData */)
   }
+  // 初始化计算属性
   if (opts.computed) initComputed(vm, opts.computed)
+  // 初始化 watch 属性
   if (opts.watch && opts.watch !== nativeWatch) {
     initWatch(vm, opts.watch)
   }
@@ -305,6 +309,7 @@ function initMethods (vm: Component, methods: Object) {
 function initWatch (vm: Component, watch: Object) {
   for (const key in watch) {
     const handler = watch[key]
+    // watcher属性回调函数可以是数组
     if (Array.isArray(handler)) {
       for (let i = 0; i < handler.length; i++) {
         createWatcher(vm, key, handler[i])
@@ -321,13 +326,18 @@ function createWatcher (
   handler: any,
   options?: Object
 ) {
+  // 判断是否是一个原生的对象
   if (isPlainObject(handler)) {
+    // 是对象则将配置传给option，并且将handler传给handler
     options = handler
     handler = handler.handler
   }
+  // handler也可以是字符串，字符串时就是处理methods中定义的函数
   if (typeof handler === 'string') {
+    // 实例上methods中定义的函数
     handler = vm[handler]
   }
+
   return vm.$watch(expOrFn, handler, options)
 }
 
@@ -362,13 +372,18 @@ export function stateMixin (Vue: Class<Component>) {
     cb: any,
     options?: Object
   ): Function {
+    // 获取 Vue 的实例 $watch 中要使用vue实例，所以没有watch没有静态方法
     const vm: Component = this
+    // 判断cb是否是对象，是对象的话，就用createWatcher去解析，createWatcher中会继续调用$watch
     if (isPlainObject(cb)) {
       return createWatcher(vm, expOrFn, cb, options)
     }
     options = options || {}
+    // 标记为用户watcher
     options.user = true
+    // 创建 watcher 对象
     const watcher = new Watcher(vm, expOrFn, cb, options)
+    // 是否立即执行一次回调函数
     if (options.immediate) {
       try {
         cb.call(vm, watcher.value)
@@ -376,6 +391,7 @@ export function stateMixin (Vue: Class<Component>) {
         handleError(error, vm, `callback for immediate watcher "${watcher.expression}"`)
       }
     }
+    // 返回取消监听的方法
     return function unwatchFn () {
       watcher.teardown()
     }
