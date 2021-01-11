@@ -49,14 +49,14 @@ export default class VNode {
     this.fnContext = undefined
     this.fnOptions = undefined
     this.fnScopeId = undefined
-    this.key = data && data.key
+    this.key = data && data.key //通过data来传递key
     this.componentOptions = componentOptions
     this.componentInstance = undefined
     this.parent = undefined
     this.raw = false
     this.isStatic = false
     this.isRootInsert = true
-    this.isComment = false
+    this.isComment = false //是否为注释节点
     this.isCloned = false
     this.isOnce = false
     this.asyncFactory = asyncFactory
@@ -74,7 +74,7 @@ export default class VNode {
 export const createEmptyVNode = (text: string = '') => {
   const node = new VNode()
   node.text = text
-  node.isComment = true
+  node.isComment = true //标识是注释节点
   return node
 }
 
