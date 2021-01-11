@@ -46,7 +46,7 @@ export function initLifecycle (vm: Component) {
 
   vm.$children = []
   vm.$refs = {}
-
+  // 添加实例的私有属性
   vm._watcher = null
   vm._inactive = null
   vm._directInactive = false
