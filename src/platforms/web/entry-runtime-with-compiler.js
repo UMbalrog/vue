@@ -37,6 +37,7 @@ Vue.prototype.$mount = function (
     let template = options.template
     if (template) {
       if (typeof template === 'string') {
+        //运行是版这个只处理template里为字符串为id的情况
         if (template.charAt(0) === '#') {
           template = idToTemplate(template)
           /* istanbul ignore if */
@@ -56,6 +57,7 @@ Vue.prototype.$mount = function (
         return this
       }
     } else if (el) {
+      // 获取el的OuterHTML，没有就创建div
       template = getOuterHTML(el)
     }
     if (template) {
@@ -63,7 +65,7 @@ Vue.prototype.$mount = function (
       if (process.env.NODE_ENV !== 'production' && config.performance && mark) {
         mark('compile')
       }
-
+      // 把template模板转为render函数
       const { render, staticRenderFns } = compileToFunctions(template, {
         outputSourceRange: process.env.NODE_ENV !== 'production',
         shouldDecodeNewlines,
@@ -97,7 +99,7 @@ function getOuterHTML (el: Element): string {
     return container.innerHTML
   }
 }
-
+// compile手动将模板转为render函数
 Vue.compile = compileToFunctions
 
 export default Vue

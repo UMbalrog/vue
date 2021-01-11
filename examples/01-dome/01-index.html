@@ -6,7 +6,12 @@
   <title>Document</title>
 </head>
 <body>
-  <div id="app"> Hello World </div>
+  <div id="app">
+    Hello World
+    <div>{{msg}}</div>
+    -------------------
+    <div>{{msg}}</div>
+  </div>
   <script src="../../dist/vue.js"></script>
   <script>
     // compiler
@@ -35,11 +40,18 @@
     // 如果同时设置template和render此时会渲染什么？
     const vm = new Vue({
       el: '#app',
-      template: '<h1>Hello Template</h1>',
-      render(h) {
-        return h('h1', 'Hello Render')
-      }
+      data() {
+        return{
+          msg: '哈哈哈哈哥'
+        }
+      },
+      // template: '<h1>Hello Template</h1>',
+      // render(h) {
+      //   return h('h1', 'Hello Render')
+      // }
     })
+    console.log(vm);
+    console.log(vm.msg);
     // 会渲染render函数
   </script>
 

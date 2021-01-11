@@ -42,6 +42,7 @@ Vue.prototype.$mount = function (
   el?: string | Element,
   hydrating?: boolean
 ): Component {
+  // 如果是运行时，没有template就需要再次获取el
   el = el && inBrowser ? query(el) : undefined
   // 渲染元素
   return mountComponent(this, el, hydrating)

@@ -148,6 +148,7 @@ export function mountComponent (
     vm.$options.render = createEmptyVNode
     if (process.env.NODE_ENV !== 'production') {
       /* istanbul ignore if */
+      // 运行时，没有render函数，并且template不是id选择就提示
       if ((vm.$options.template && vm.$options.template.charAt(0) !== '#') ||
         vm.$options.el || el) {
         warn(
@@ -164,6 +165,7 @@ export function mountComponent (
       }
     }
   }
+  // 触发beforeMount
   callHook(vm, 'beforeMount')
 
   let updateComponent
@@ -187,6 +189,7 @@ export function mountComponent (
     }
   } else {
     updateComponent = () => {
+      // 这里就会开始渲染界面
       vm._update(vm._render(), hydrating)
     }
   }
@@ -194,6 +197,12 @@ export function mountComponent (
   // we set this to vm._watcher inside the watcher's constructor
   // since the watcher's initial patch may call $forceUpdate (e.g. inside child
   // component's mounted hook), which relies on vm._watcher being already defined
+  // 这里为什么要通过watch渲染界面，
+  // 这里可能是要将渲染过程保存在watcher中，并添加监听数据变，以便再之后的数据变化后更新视图，只需在需要改变时视图时，触发次watcher即可
+
+  // 在Watcher中利用get方法执行updateComponent渲染界面；
+
+  // 渲染Watcher，将渲染的函数独立放出 在 Watcher 的get中去调用函数，其中渲染函数会调用用到变量的get，此时就可以给对应的属性添加Watcher，到对应的Dep中，切注册updata为该渲染函数，则当其中任意一个变量变化都会执行该渲染函数去渲染。
   new Watcher(vm, updateComponent, noop, {
     before () {
       if (vm._isMounted && !vm._isDestroyed) {
@@ -205,6 +214,7 @@ export function mountComponent (
 
   // manually mounted instance, call mounted on self
   // mounted is called for render-created child components in its inserted hook
+  // 触发mounted
   if (vm.$vnode == null) {
     vm._isMounted = true
     callHook(vm, 'mounted')

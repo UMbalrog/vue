@@ -33,13 +33,16 @@ export function createElement (
   normalizationType: any,
   alwaysNormalize: boolean
 ): VNode | Array<VNode> {
+  // 对参数处理
   if (Array.isArray(data) || isPrimitive(data)) {
+    // 如果data是，数组或者是原始值
+    // 就是children子节点
     normalizationType = children
     children = data
     data = undefined
   }
-  if (isTrue(alwaysNormalize)) {
-    normalizationType = ALWAYS_NORMALIZE
+  if (isTrue(alwaysNormalize)) { //为true则是用户传入的render函数
+    normalizationType = ALWAYS_NORMALIZE // 2
   }
   return _createElement(context, tag, data, children, normalizationType)
 }
@@ -51,14 +54,17 @@ export function _createElement (
   children?: any,
   normalizationType?: number
 ): VNode | Array<VNode> {
+  // 判断data是否存在，并是不是一个响应式的数据
   if (isDef(data) && isDef((data: any).__ob__)) {
     process.env.NODE_ENV !== 'production' && warn(
       `Avoid using observed data object as vnode data: ${JSON.stringify(data)}\n` +
       'Always create fresh vnode data objects in each render!',
       context
     )
+    // 返回空节点
     return createEmptyVNode()
   }
+  // 处理is属性， v-bind:is
   // object syntax in v-bind
   if (isDef(data) && isDef(data.is)) {
     tag = data.is
@@ -67,7 +73,7 @@ export function _createElement (
     // in case of component :is set to falsy value
     return createEmptyVNode()
   }
-  // warn against non-primitive key
+  // warn against non-primitive key 检测key值，要为原始值。string/number
   if (process.env.NODE_ENV !== 'production' &&
     isDef(data) && isDef(data.key) && !isPrimitive(data.key)
   ) {
@@ -87,15 +93,19 @@ export function _createElement (
     data.scopedSlots = { default: children[0] }
     children.length = 0
   }
+
   if (normalizationType === ALWAYS_NORMALIZE) {
+    // 判断是用户传递的render， 转为一维数组；
     children = normalizeChildren(children)
   } else if (normalizationType === SIMPLE_NORMALIZE) {
+    // 将二维数组 转为一维数组；
     children = simpleNormalizeChildren(children)
   }
   let vnode, ns
   if (typeof tag === 'string') {
     let Ctor
     ns = (context.$vnode && context.$vnode.ns) || config.getTagNamespace(tag)
+    // 如果是合法标签
     if (config.isReservedTag(tag)) {
       // platform built-in elements
       if (process.env.NODE_ENV !== 'production' && isDef(data) && isDef(data.nativeOn)) {
@@ -104,11 +114,14 @@ export function _createElement (
           context
         )
       }
+      // 创建VNode实例
       vnode = new VNode(
         config.parsePlatformTagName(tag), data, children,
         undefined, undefined, context
       )
+    // 判断是否是，自定义组件
     } else if ((!data || !data.pre) && isDef(Ctor = resolveAsset(context.$options, 'components', tag))) {
+      // 查找自定义组件构造函数的声明，根据Ctor 创建组件的VNode
       // component
       vnode = createComponent(Ctor, data, context, children, tag)
     } else {
@@ -121,9 +134,11 @@ export function _createElement (
       )
     }
   } else {
+    // tag字符串，那就应该是组件，去创建组件
     // direct component options / constructor
     vnode = createComponent(tag, data, context, children)
   }
+  // vnode创建完成后处理一些事情
   if (Array.isArray(vnode)) {
     return vnode
   } else if (isDef(vnode)) {

@@ -11,9 +11,13 @@ const callbacks = []
 let pending = false
 
 function flushCallbacks () {
+  // 标记处理结束
   pending = false
+  // 克隆 callbacks
   const copies = callbacks.slice(0)
+  // 清空 callbacks
   callbacks.length = 0
+  // 循环执行 callbacks中的函数
   for (let i = 0; i < copies.length; i++) {
     copies[i]()
   }
@@ -38,10 +42,15 @@ let timerFunc
 // UIWebView in iOS >= 9.3.3 when triggered in touch event handlers. It
 // completely stops working after triggering a few times... so, if native
 // Promise is available, we will use it:
+
+// nextTick行为利用了微任务队列，可以通过本机或我保证。那么或者变异观察者。
+// MutationObserver拥有更广泛的支持，但是在iOS>=9.3.3的UIWebView中，当触发touch事件处理程序时，它会受到严重的缺陷。它触发几次后就完全停止工作了。。。因此，如果本地Promise可用，我们将使用它：
 /* istanbul ignore next, $flow-disable-line */
 if (typeof Promise !== 'undefined' && isNative(Promise)) {
   const p = Promise.resolve()
   timerFunc = () => {
+    // 这里利用Promise的resolve状态，flushCallbacks会立即执行，但是是以微任务的形式执行的，当所有同步任务执行完后执行微任务。
+    // 而微任务的优势就是，当同步任务都执行完，DOM树这时也已经都更新了，但是还没被渲染到浏览器上时执行的，等到微任务都执行完，才会去渲染DOM到浏览器上，这样可以最大化的优化Vue的渲染性能。
     p.then(flushCallbacks)
     // In problematic UIWebViews, Promise.then doesn't completely break, but
     // it can get stuck in a weird state where callbacks are pushed into the
@@ -50,7 +59,9 @@ if (typeof Promise !== 'undefined' && isNative(Promise)) {
     // "force" the microtask queue to be flushed by adding an empty timer.
     if (isIOS) setTimeout(noop)
   }
+  // 标记为微任务
   isUsingMicroTask = true
+// 以下是兼容Promise不可使用的情况，优先以微任务的形式去执行，实在不行就以宏任务的方式去执行，setTimeout
 } else if (!isIE && typeof MutationObserver !== 'undefined' && (
   isNative(MutationObserver) ||
   // PhantomJS and iOS 7.x
@@ -86,9 +97,11 @@ if (typeof Promise !== 'undefined' && isNative(Promise)) {
 
 export function nextTick (cb?: Function, ctx?: Object) {
   let _resolve
+  // 将 cb 加上异常处理放入callbacks数组队列中
   callbacks.push(() => {
     if (cb) {
       try {
+        // 调用cb
         cb.call(ctx)
       } catch (e) {
         handleError(e, ctx, 'nextTick')
@@ -97,11 +110,14 @@ export function nextTick (cb?: Function, ctx?: Object) {
       _resolve(ctx)
     }
   })
-  if (!pending) {
+  if (!pending) { // 队列是否正在调用中
+    // 没有调用则开始调用
     pending = true
+
     timerFunc()
   }
   // $flow-disable-line
+  // 当cb 不存在并且Promise存在时，返回一个Promise对象，并且将执行resolve传入第二个参数
   if (!cb && typeof Promise !== 'undefined') {
     return new Promise(resolve => {
       _resolve = resolve

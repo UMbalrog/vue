@@ -70,28 +70,35 @@ if (inBrowser && !isIE) {
  */
 function flushSchedulerQueue () {
   currentFlushTimestamp = getNow()
-  flushing = true
+  flushing = true //开始处理队列
   let watcher, id
 
   // Sort queue before flush.
   // This ensures that:
-  // 1. Components are updated from parent to child. (because parent is always
-  //    created before the child)
+  // 1. Components are updated from parent to child. (because parent is always created before the child)
   // 2. A component's user watchers are run before its render watcher (because
   //    user watchers are created before the render watcher)
   // 3. If a component is destroyed during a parent component's watcher run,
   //    its watchers can be skipped.
+
+  // 组件排序的目的，
+  // 在刷新处理前，对队列排序。这可确保：
+  // 1. 组件从父级更新到子级。（因为父组件总是在子组件对象之前创建）
+  // 2. 组件的用户 watcher ，在渲染 watcher 之前运行（因为用户 watcher在渲染 watcher 之前创建）（用户 watcher 在initState方法中执行，而渲染 watcher是在mountComponent中执行的，mountComponent是在最后$mount方法中执行的。
+  // 3. 如果在父组件的观察程序运行期间组件被销毁，它的watcher可以跳过。
+
   queue.sort((a, b) => a.id - b.id)
 
   // do not cache length because more watchers might be pushed
   // as we run existing watchers
+  // 不要缓存长度，因为可能会推送更多的观察者当我们运行现有的观察程序
   for (index = 0; index < queue.length; index++) {
     watcher = queue[index]
-    if (watcher.before) {
+    if (watcher.before) { //渲染watcher会执行before，触发钩子函数
       watcher.before()
     }
     id = watcher.id
-    has[id] = null
+    has[id] = null // 处理完成，可以进行下次处理了
     watcher.run()
     // in dev build, check and stop circular updates.
     if (process.env.NODE_ENV !== 'production' && has[id] != null) {
@@ -114,9 +121,11 @@ function flushSchedulerQueue () {
   const activatedQueue = activatedChildren.slice()
   const updatedQueue = queue.slice()
 
+  // 重置当前watcher的状态
   resetSchedulerState()
 
   // call component updated and activated hooks
+  // 触发两个钩子
   callActivatedHooks(activatedQueue)
   callUpdatedHooks(updatedQueue)
 
@@ -160,24 +169,34 @@ function callActivatedHooks (queue) {
  * Push a watcher into the watcher queue.
  * Jobs with duplicate IDs will be skipped unless it's
  * pushed when the queue is being flushed.
+ * 将观察者推入观察者队列。
+ * 具有重复ID的作业将被跳过，除非在刷新队列时将其推入。
  */
 export function queueWatcher (watcher: Watcher) {
   const id = watcher.id
-  if (has[id] == null) {
+  if (has[id] == null) { // 判断该watcher是否被处理
+    // 开始处理
     has[id] = true
-    if (!flushing) {
+    if (!flushing) { // flushing正在刷新 是否正在被处理
+      // 队列没有在处理，将watcher放入队列
       queue.push(watcher)
     } else {
+      // 队列正在被处理
       // if already flushing, splice the watcher based on its id
+      // 如果已经刷新，请根据其id拼接观察程序
       // if already past its id, it will be run next immediately.
+      // 如果已经超过它的id，它将立即运行。
       let i = queue.length - 1
       while (i > index && queue[i].id > watcher.id) {
         i--
       }
       queue.splice(i + 1, 0, watcher)
     }
+    // 以上是将watcher放入待处理的队列中
+
     // queue the flush
-    if (!waiting) {
+    if (!waiting) { //队列是否在执行
+      // 没有执行开始执行
       waiting = true
 
       if (process.env.NODE_ENV !== 'production' && !config.async) {
