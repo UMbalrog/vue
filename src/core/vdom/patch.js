@@ -69,7 +69,7 @@ function createKeyToOldIdx (children, beginIdx, endIdx) {
 // 创建patch函数
 export function createPatchFunction (backend) {
   let i, j
-  const cbs = {} // 用来存储钩子函数
+  const cbs = {} // 用来存储钩子函数通过钩子来处理节点的属性，样式，事件等操作
   // modules 节点的属性，样式，事件操作
   // nodeOps 节点本身的DOM操作
   const { modules, nodeOps } = backend
