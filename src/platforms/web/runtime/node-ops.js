@@ -4,6 +4,7 @@ import { namespaceMap } from 'web/util/index'
 
 export function createElement (tagName: string, vnode: VNode): Element {
   const elm = document.createElement(tagName)
+  // 特殊处理的select标签
   if (tagName !== 'select') {
     return elm
   }

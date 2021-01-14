@@ -10,6 +10,8 @@ import { currentFlushTimestamp } from 'core/observer/scheduler'
 // it's important to place the event as the first in the array because
 // the whole point is ensuring the v-model callback gets called before
 // user-attached handlers.
+// 规范化只能在运行时确定的v-model事件标记。
+// 将事件作为数组中的第一个事件放置是很重要的，因为关键是确保在用户附加的处理程序之前调用v-model回调。
 function normalizeEvents (on) {
   /* istanbul ignore if */
   if (isDef(on[RANGE_TOKEN])) {
@@ -103,12 +105,14 @@ function remove (
 }
 
 function updateDOMListeners (oldVnode: VNodeWithData, vnode: VNodeWithData) {
+  // 新旧节点都无事件，直接返回
   if (isUndef(oldVnode.data.on) && isUndef(vnode.data.on)) {
     return
   }
   const on = vnode.data.on || {}
   const oldOn = oldVnode.data.on || {}
   target = vnode.elm
+
   normalizeEvents(on)
   updateListeners(on, oldOn, add, remove, createOnceHandler, vnode.context)
   target = undefined
