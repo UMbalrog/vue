@@ -217,13 +217,14 @@ export function createPatchFunction (backend) {
     } else {
       vnode.elm = nodeOps.createTextNode(vnode.text)
       insert(parentElm, vnode.elm, refElm)
-    } 
+    }
   }
 
   function createComponent (vnode, insertedVnodeQueue, parentElm, refElm) {
     let i = vnode.data
     if (isDef(i)) {
       const isReactivated = isDef(vnode.componentInstance) && i.keepAlive
+      // 在data的钩子函数中，调用init方法，创建挂在组件实例
       if (isDef(i = i.hook) && isDef(i = i.init)) {
         i(vnode, false /* hydrating */)
       }
@@ -759,7 +760,7 @@ export function createPatchFunction (backend) {
   }
 
   // 一个柯里化的函数，缓存了 nodeOps, modules，可以在patch中一直使用这两个参数
-  // 最终返回patch函数 
+  // 最终返回patch函数
   return function patch (oldVnode, vnode, hydrating, removeOnly) {
     // 判断新节点没有，旧节点有，则直接触发旧节点的Destroy钩子
     if (isUndef(vnode)) {
@@ -816,7 +817,7 @@ export function createPatchFunction (backend) {
         // 获取旧节点的父节点，为了早到插入的位置。
         const oldElm = oldVnode.elm
         const parentElm = nodeOps.parentNode(oldElm)
-        
+
         // 新旧节点都有了，创建新节点vnode
         // create new node
         createElm(
