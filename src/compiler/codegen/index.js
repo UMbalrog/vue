@@ -44,6 +44,7 @@ export function generate (
   ast: ASTElement | void,
   options: CompilerOptions
 ): CodegenResult {
+  // 创建状态对象，
   const state = new CodegenState(options)
   const code = ast ? genElement(ast, state) : '_c("div")'
   return {
@@ -56,7 +57,7 @@ export function genElement (el: ASTElement, state: CodegenState): string {
   if (el.parent) {
     el.pre = el.pre || el.parent.pre
   }
-
+  // 处理各个标签
   if (el.staticRoot && !el.staticProcessed) {
     return genStatic(el, state)
   } else if (el.once && !el.onceProcessed) {
@@ -77,9 +78,11 @@ export function genElement (el: ASTElement, state: CodegenState): string {
     } else {
       let data
       if (!el.plain || (el.pre && state.maybeComponent(el))) {
+        // 生成元素的属性/指令/事件等
+        // 处理各种指令，包括genDirectives(model/text/html)
         data = genData(el, state)
       }
-
+      // 处理字节点 genChildren
       const children = el.inlineTemplate ? null : genChildren(el, state, true)
       code = `_c('${el.tag}'${
         data ? `,${data}` : '' // data

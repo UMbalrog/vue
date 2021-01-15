@@ -7,6 +7,7 @@
  * Modified by Juriy "kangax" Zaytsev
  * Original code by Erik Arvidsson (MPL-1.1 OR Apache-2.0 OR GPL-2.0-or-later)
  * http://erik.eae.net/simplehtmlparser/simplehtmlparser.js
+ * HTML解析器借鉴了一个开源库 simplehtmlparser
  */
 
 import { makeMap, no } from 'shared/util'
@@ -14,15 +15,21 @@ import { isNonPhrasingTag } from 'web/compiler/util'
 import { unicodeRegExp } from 'core/util/lang'
 
 // Regular Expressions for parsing tags and attributes
+// 匹配标签属性
 const attribute = /^\s*([^\s"'<>\/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/
+// 匹配标签属性指令
 const dynamicArgAttribute = /^\s*((?:v-[\w-]+:|@|:|#)\[[^=]+?\][^\s"'<>\/=]*)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/
+
 const ncname = `[a-zA-Z_][\\-\\.0-9_a-zA-Z${unicodeRegExp.source}]*`
 const qnameCapture = `((?:${ncname}\\:)?${ncname})`
+// 匹配开始和结束标签
 const startTagOpen = new RegExp(`^<${qnameCapture}`)
 const startTagClose = /^\s*(\/?)>/
 const endTag = new RegExp(`^<\\/${qnameCapture}[^>]*>`)
+// 匹配文档声明
 const doctype = /^<!DOCTYPE [^>]+>/i
 // #7298: escape - to avoid being passed as HTML comment when inlined in page
+// 匹配注释标签
 const comment = /^<!\--/
 const conditionalComment = /^<!\[/
 
@@ -60,7 +67,9 @@ export function parseHTML (html, options) {
   let last, lastTag
   while (html) {
     last = html
+    // while中会将处理完成的部分从html中截取掉，
     // Make sure we're not in a plaintext content element like script/style
+    // 确保我们没有像脚本/样式这样的纯文本内容元素
     if (!lastTag || !isPlainTextElement(lastTag)) {
       let textEnd = html.indexOf('<')
       if (textEnd === 0) {
@@ -70,14 +79,17 @@ export function parseHTML (html, options) {
 
           if (commentEnd >= 0) {
             if (options.shouldKeepComment) {
+              // 处理注释标签
               options.comment(html.substring(4, commentEnd), index, index + commentEnd + 3)
             }
+            // 截取处理完的部分
             advance(commentEnd + 3)
             continue
           }
         }
 
         // http://en.wikipedia.org/wiki/Conditional_comment#Downlevel-revealed_conditional_comment
+        // 是否是条件注释
         if (conditionalComment.test(html)) {
           const conditionalEnd = html.indexOf(']>')
 
@@ -87,14 +99,14 @@ export function parseHTML (html, options) {
           }
         }
 
-        // Doctype:
+        // Doctype: 是否是文档声明
         const doctypeMatch = html.match(doctype)
         if (doctypeMatch) {
           advance(doctypeMatch[0].length)
           continue
         }
 
-        // End tag:
+        // End tag: 是否是结束标签
         const endTagMatch = html.match(endTag)
         if (endTagMatch) {
           const curIndex = index
@@ -103,9 +115,10 @@ export function parseHTML (html, options) {
           continue
         }
 
-        // Start tag:
+        // Start tag: 是否是开始标签
         const startTagMatch = parseStartTag()
         if (startTagMatch) {
+          // 判断是开始标签，处理较多的事情
           handleStartTag(startTagMatch)
           if (shouldIgnoreFirstNewline(startTagMatch.tagName, html)) {
             advance(1)
@@ -248,6 +261,7 @@ export function parseHTML (html, options) {
     }
 
     if (options.start) {
+      // 解析完成后调用start回调
       options.start(tagName, attrs, unary, match.start, match.end)
     }
   }

@@ -11,6 +11,7 @@ type CompiledFunctionResult = {
 
 function createFunction (code, errors) {
   try {
+    // 创建函数
     return new Function(code)
   } catch (err) {
     errors.push({ err, code })
@@ -19,6 +20,8 @@ function createFunction (code, errors) {
 }
 
 export function createCompileToFunctionFn (compile: Function): Function {
+
+  // 创建没有原型的对象目的是 通过闭包缓存编译后的结果
   const cache = Object.create(null)
 
   return function compileToFunctions (
@@ -26,6 +29,7 @@ export function createCompileToFunctionFn (compile: Function): Function {
     options?: CompilerOptions,
     vm?: Component
   ): CompiledFunctionResult {
+    // 克隆options
     options = extend({}, options)
     const warn = options.warn || baseWarn
     delete options.warn
@@ -49,6 +53,8 @@ export function createCompileToFunctionFn (compile: Function): Function {
     }
 
     // check cache
+    // 1.读取缓存中的 CompiledFunctionResult 对象，如果有直接返回
+    // delimiters属性可以改变Vue中插值表达式的符号，将{{}}变为xxxx
     const key = options.delimiters
       ? String(options.delimiters) + template
       : template
@@ -56,10 +62,12 @@ export function createCompileToFunctionFn (compile: Function): Function {
       return cache[key]
     }
 
-    // compile
+    // compile编译
+    // 2.把模板编译为编译对象返回（render， staticRenderFns），字符串形式的 js 代码
     const compiled = compile(template, options)
 
     // check compilation errors/tips
+    // 收集编译中的错误，并且打印利用errors和tips属性
     if (process.env.NODE_ENV !== 'production') {
       if (compiled.errors && compiled.errors.length) {
         if (options.outputSourceRange) {
@@ -90,6 +98,8 @@ export function createCompileToFunctionFn (compile: Function): Function {
     // turn code into functions
     const res = {}
     const fnGenErrors = []
+    // 3.利用createFunction将字符串形式的js代码转换成js方法
+    // 变成函数一个render函数，一个staticRenderFns静态节点的函数
     res.render = createFunction(compiled.render, fnGenErrors)
     res.staticRenderFns = compiled.staticRenderFns.map(code => {
       return createFunction(code, fnGenErrors)
@@ -108,7 +118,7 @@ export function createCompileToFunctionFn (compile: Function): Function {
         )
       }
     }
-
+    // 存入缓存并返回对象（render， staticRenderFns）
     return (cache[key] = res)
   }
 }

@@ -82,6 +82,7 @@ export function parse (
 ): ASTElement | void {
   warn = options.warn || baseWarn
 
+  // 1.处理option参数
   platformIsPreTag = options.isPreTag || no
   platformMustUseProp = options.mustUseProp || no
   platformGetTagNamespace = options.getTagNamespace || no
@@ -200,7 +201,7 @@ export function parse (
       )
     }
   }
-
+  // 2.对模板解析
   parseHTML(template, {
     warn,
     expectHTML: options.expectHTML,
@@ -210,6 +211,8 @@ export function parse (
     shouldDecodeNewlinesForHref: options.shouldDecodeNewlinesForHref,
     shouldKeepComment: options.comments,
     outputSourceRange: options.outputSourceRange,
+    // 解析过程中的回调函数，
+    // 开始标签
     start (tag, attrs, unary, start, end) {
       // check namespace.
       // inherit parent ns if there is one
@@ -220,7 +223,7 @@ export function parse (
       if (isIE && ns === 'svg') {
         attrs = guardIESVGBug(attrs)
       }
-
+      // 创建 AST 对象，就是一个对象
       let element: ASTElement = createASTElement(tag, attrs, currentParent)
       if (ns) {
         element.ns = ns
@@ -265,6 +268,7 @@ export function parse (
       }
 
       if (!inVPre) {
+        // 处理v-pre指令
         processPre(element)
         if (element.pre) {
           inVPre = true
@@ -277,6 +281,7 @@ export function parse (
         processRawAttrs(element)
       } else if (!element.processed) {
         // structural directives
+        // 处理结构话指令 v-for,v-if,v-once
         processFor(element)
         processIf(element)
         processOnce(element)
@@ -296,7 +301,7 @@ export function parse (
         closeElement(element)
       }
     },
-
+    // 结束标签
     end (tag, start, end) {
       const element = stack[stack.length - 1]
       // pop stack
@@ -307,7 +312,7 @@ export function parse (
       }
       closeElement(element)
     },
-
+    // 文本内容
     chars (text: string, start: number, end: number) {
       if (!currentParent) {
         if (process.env.NODE_ENV !== 'production') {
@@ -379,6 +384,7 @@ export function parse (
         }
       }
     },
+    // 注释标签
     comment (text: string, start, end) {
       // adding anything as a sibling to the root node is forbidden
       // comments should still be allowed, but ignored
@@ -396,6 +402,7 @@ export function parse (
       }
     }
   })
+  // 3.返回解析好的 AST
   return root
 }
 
