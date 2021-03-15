@@ -12,7 +12,7 @@ function Vue (options) {
   ) {
     warn('Vue is a constructor and should be called with the `new` keyword')
   }
-  // 调用 _init()方法
+  // 调用 _init()方法 Vue执行入口
   this._init(options)
 }
 // 注册 vm 实例的init方法初始化； 为实例注册方法
