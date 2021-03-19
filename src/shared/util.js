@@ -205,11 +205,12 @@ function polyfillBind (fn: Function, ctx: Object): Function {
   boundFn._length = fn.length
   return boundFn
 }
-
+// 利用 bind 嵌套了 一层函数 不是直接指向 methods 下的函数
 function nativeBind (fn: Function, ctx: Object): Function {
   return fn.bind(ctx)
 }
 
+// 并且有兼容
 export const bind = Function.prototype.bind
   ? nativeBind
   : polyfillBind

@@ -4,12 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>key</title>
+  <style>
+    li{
+      font-size: 32px;
+    }
+  </style>
 </head>
 <body>
   <div id="app">
     <button @click="handler">按钮</button>
     <ul>
-      <li v-for="(value, k) in arr" :key="value">{{value}}</li>
+      {{msg}}
+      <li v-for="(value, k) in arr" :key="k">文案{{value}}</li>
     </ul>
   </div>
   <script src="../../dist/vue.js"></script>
@@ -17,7 +23,8 @@
     const vm = new Vue({
       el: '#app',
       data: {
-        arr: ['a', 'b', 'c', 'd']
+        arr: ['a', 'b', 'c', 'd'],
+        msg: 'heheheeh'
       },
       methods: {
         handler () {
